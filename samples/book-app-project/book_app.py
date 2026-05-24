@@ -86,6 +86,26 @@ def handle_find(collection: BookCollection) -> int:
     return 0
 
 
+def handle_search_year(collection: BookCollection) -> int:
+    print("\nFind Books by Year Range\n")
+
+    start_year_str = input("Start year: ").strip()
+    start_year, start_year_error = parse_publication_year(start_year_str)
+    if start_year_error is not None or start_year is None:
+        print(f"\nError: {start_year_error}\n")
+        return 1
+
+    end_year_str = input("End year: ").strip()
+    end_year, end_year_error = parse_publication_year(end_year_str)
+    if end_year_error is not None or end_year is None:
+        print(f"\nError: {end_year_error}\n")
+        return 1
+
+    books = collection.find_by_year_range(start_year, end_year)
+    display_books(books)
+    return 0
+
+
 CollectionCommandHandler = Callable[[BookCollection], int]
 CollectionArgsCommandHandler = Callable[[BookCollection, list[str]], int]
 CommandHandler = Callable[[], int]

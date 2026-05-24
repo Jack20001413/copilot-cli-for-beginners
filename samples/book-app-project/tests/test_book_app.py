@@ -316,6 +316,73 @@ class TestHandleFind:
         assert "1. [ ] Dune by Frank Herbert (1965)" in captured.out
 
 
+class TestHandleSearchYear:
+    """Tests for handle_search_year."""
+
+    def test_displays_matching_books_with_shared_format(
+        self,
+        set_input,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        collection = books.BookCollection()
+        collection.add_book("Dune", "Frank Herbert", 1965)
+        collection.add_book("Children of Dune", "Frank Herbert", 1976)
+        collection.add_book("Neuromancer", "William Gibson", 1984)
+        set_input(["1960", "1980"])
+
+        result = book_app.handle_search_year(collection)
+
+        captured = capsys.readouterr()
+        assert result == 0
+        assert "Your Book Collection:" in captured.out
+        assert "1. [ ] Dune by Frank Herbert (1965)" in captured.out
+        assert "2. [ ] Children of Dune by Frank Herbert (1976)" in captured.out
+        assert "Neuromancer by William Gibson (1984)" not in captured.out
+
+    def test_returns_error_for_invalid_start_year(
+        self,
+        set_input,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        collection = books.BookCollection()
+        set_input(["invalid"])
+
+        result = book_app.handle_search_year(collection)
+
+        captured = capsys.readouterr()
+        assert result == 1
+        assert "Error: Year must be a whole number." in captured.out
+
+    def test_returns_error_for_invalid_end_year(
+        self,
+        set_input,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        collection = books.BookCollection()
+        set_input(["1960", ""])
+
+        result = book_app.handle_search_year(collection)
+
+        captured = capsys.readouterr()
+        assert result == 1
+        assert "Error: Year cannot be empty. Please enter a publication year." in captured.out
+
+    def test_allows_whitespace_around_years(
+        self,
+        set_input,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        collection = books.BookCollection()
+        collection.add_book("Dune", "Frank Herbert", 1965)
+        set_input([" 1960 ", " 1970 "])
+
+        result = book_app.handle_search_year(collection)
+
+        captured = capsys.readouterr()
+        assert result == 0
+        assert "1. [ ] Dune by Frank Herbert (1965)" in captured.out
+
+
 class TestHandleExportCsv:
     """Tests for handle_export_csv."""
 

@@ -371,6 +371,35 @@ class BookCollection:
         """
         return [book for book in self.books if not book.read]
 
+    def find_by_year_range(self, start_year: int, end_year: int) -> List[Book]:
+        """Find books published within an inclusive year range.
+
+        Args:
+            start_year (int): The earliest publication year to include.
+            end_year (int): The latest publication year to include.
+
+        Returns:
+            List[Book]: Books whose publication year falls between
+            ``start_year`` and ``end_year``, inclusive.
+
+        Raises:
+            ValueError: If either year is negative or later than the current
+                year.
+
+        Examples:
+            >>> collection = BookCollection()
+            >>> collection.find_by_year_range(2000, 2020)
+            []
+        """
+        validated_start_year = _validate_publication_year(start_year)
+        validated_end_year = _validate_publication_year(end_year)
+
+        return [
+            book
+            for book in self.books
+            if validated_start_year <= book.year <= validated_end_year
+        ]
+
     def list_by_year(self, start: int, end: int) -> List[Book]:
         """Return books published within an inclusive year range.
 
@@ -382,12 +411,16 @@ class BookCollection:
             List[Book]: Books whose publication year falls between ``start``
             and ``end``, inclusive.
 
+        Raises:
+            ValueError: If either year is negative or later than the current
+                year.
+
         Examples:
             >>> collection = BookCollection()
             >>> collection.list_by_year(2000, 2020)
             []
         """
-        return [book for book in self.books if start <= book.year <= end]
+        return self.find_by_year_range(start, end)
 
     def find_book_by_title(self, title: str) -> Optional[Book]:
         """Find the first book whose title matches case-insensitively.

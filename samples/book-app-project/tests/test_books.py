@@ -519,7 +519,7 @@ class TestListByYear:
             (1937, 1937, ["The Hobbit"]),
             (1937, 1965, ["The Hobbit", "Dune"]),
             (1965, 1984, ["Dune", "Neuromancer"]),
-            (-10, 1937, ["The Hobbit"]),
+            (0, 1937, ["The Hobbit"]),
         ],
     )
     def test_returns_books_in_inclusive_range(
@@ -541,6 +541,72 @@ class TestListByYear:
         end: int,
     ) -> None:
         assert collection_with_books.list_by_year(start, end) == []
+
+
+class TestFindByYearRange:
+    """Tests for find_by_year_range."""
+
+    @pytest.mark.parametrize(
+        ("start_year", "end_year", "expected_titles"),
+        [
+            (1937, 1937, ["The Hobbit"]),
+            (1937, 1965, ["The Hobbit", "Dune"]),
+            (1965, 1984, ["Dune", "Neuromancer"]),
+            (0, 1937, ["The Hobbit"]),
+        ],
+    )
+    def test_find_by_year_range_returns_books_in_inclusive_range(
+        self,
+        collection_with_books: BookCollection,
+        start_year: int,
+        end_year: int,
+        expected_titles: list[str],
+    ) -> None:
+        result = collection_with_books.find_by_year_range(start_year, end_year)
+
+        assert [book.title for book in result] == expected_titles
+
+    @pytest.mark.parametrize(("start_year", "end_year"), [(1900, 1901), (1985, 1990), (2000, 1990)])
+    def test_find_by_year_range_returns_empty_list_when_no_books_match(
+        self,
+        collection_with_books: BookCollection,
+        start_year: int,
+        end_year: int,
+    ) -> None:
+        assert collection_with_books.find_by_year_range(start_year, end_year) == []
+
+    def test_find_by_year_range_returns_empty_list_for_reversed_range(
+        self,
+        collection_with_books: BookCollection,
+    ) -> None:
+        assert collection_with_books.find_by_year_range(2000, 1990) == []
+
+    @pytest.mark.parametrize(
+        ("start_year", "end_year", "expected_message"),
+        [
+            (-1, 1965, "Year cannot be negative."),
+            (1965, -1, "Year cannot be negative."),
+            (
+                date.today().year + 1,
+                date.today().year,
+                f"Year cannot be in the future. Please enter a year up to {date.today().year}.",
+            ),
+            (
+                date.today().year,
+                date.today().year + 1,
+                f"Year cannot be in the future. Please enter a year up to {date.today().year}.",
+            ),
+        ],
+    )
+    def test_find_by_year_range_rejects_invalid_years(
+        self,
+        collection_with_books: BookCollection,
+        start_year: int,
+        end_year: int,
+        expected_message: str,
+    ) -> None:
+        with pytest.raises(ValueError, match=expected_message):
+            collection_with_books.find_by_year_range(start_year, end_year)
 
 
 class TestFindBookByTitle:
